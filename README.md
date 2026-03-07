@@ -1,45 +1,134 @@
 # openweather-agent
 
-OpenWeather-powered agent project, built in phases.
+OpenWeather-powered weather assistant with three parts:
 
----
+- `mcp-server/`: FastAPI weather data service (OpenWeather wrapper)
+- `agent-backend/`: FastAPI chat backend with a LangChain weather agent
+- `frontend/`: React + Vite UI
 
-## Phase 1 — MCP Server (Part 1)
+## Architecture
 
-Phase 1 delivers the **MCP Server**: a FastAPI app that wraps the OpenWeatherMap API and exposes weather endpoints. This is the foundation other phases will use.
+1. Frontend sends user messages to `agent-backend` (`POST /chat`).
+2. Agent backend uses LangChain tools to call the MCP server for real weather data.
+3. MCP server calls OpenWeather APIs and returns normalized weather JSON.
 
-### Setup
+## Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- OpenWeather API key from https://openweathermap.org/api_keys
+- OpenAI API key with available quota
+
+## 1. MCP Server Setup (`mcp-server`)
+
+Install dependencies:
 
 ```bash
 cd mcp-server
 pip install -r requirements.txt
+```
+
+Configure environment:
+
+```bash
 cp .env.example .env
 ```
 
-Edit `.env` and set your `OPENWEATHER_API_KEY` (get one at [openweathermap.org](https://openweathermap.org/api_keys)).
+Set in `.env`:
 
-### Run
+```env
+OPENWEATHER_API_KEY=your_openweather_api_key
+```
+
+Run on port `8000`:
 
 ```bash
 python -m uvicorn main:app --reload --port 8000
 ```
 
-Server runs at [http://localhost:8000](http://localhost:8000).
+MCP endpoints:
 
-### Endpoints
+- `GET /health`
+- `GET /current-weather?city=London`
+- `GET /forecast?city=Austin&days=3`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check. Returns `{"status": "ok"}`. |
-| GET | `/current-weather?city=` | Current weather for a city. Returns city name, temperature (°F), description, humidity, wind speed. |
-| GET | `/forecast?city=&days=` | Daily forecast. `days` is optional (1–5, default 1). Returns date, high/low temp (°F), and description per day. |
+## 2. Agent Backend Setup (`agent-backend`)
 
-### Examples
+Install dependencies:
 
-- Health: [http://localhost:8000/health](http://localhost:8000/health)
-- Current weather: [http://localhost:8000/current-weather?city=London](http://localhost:8000/current-weather?city=London)
-- Forecast: [http://localhost:8000/forecast?city=Austin&days=3](http://localhost:8000/forecast?city=Austin&days=3)
+```bash
+cd agent-backend
+pip install -r requirements.txt
+```
 
----
+Create `agent-backend/.env` and set:
 
-*Phase 2 and beyond will be documented here as they’re added.*
+```env
+MCP_SERVER_URL=http://127.0.0.1:8000
+OPENAI_API_KEY=your_openai_api_key
+```
+
+Run on port `8001`:
+
+```bash
+python -m uvicorn main:app --reload --port 8001
+```
+
+If running from repo root, use:
+
+```bash
+uvicorn main:app --reload --port 8001 --app-dir agent-backend
+```
+
+Agent backend endpoints:
+
+- `GET /health`
+- `POST /chat`
+
+Example chat request:
+
+```bash
+curl -X POST http://127.0.0.1:8001/chat \
+	-H "Content-Type: application/json" \
+	-d '{"message":"What is the weather like in Austin right now?"}'
+```
+
+Example response:
+
+```json
+{"response":"..."}
+```
+
+## 3. Frontend Setup (`frontend`)
+
+Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+Run dev server (default port `5173`):
+
+```bash
+npm run dev
+```
+
+Build production assets:
+
+```bash
+npm run build
+```
+
+## Local Run Order
+
+Start services in this order:
+
+1. `mcp-server` on `http://127.0.0.1:8000`
+2. `agent-backend` on `http://127.0.0.1:8001`
+3. `frontend` on `http://localhost:5173`
+
+## Notes
+
+- Backend CORS currently allows `http://localhost:5173`.
+- If OpenAI quota is exceeded, `/chat` returns `503` with a quota/rate-limit message.
