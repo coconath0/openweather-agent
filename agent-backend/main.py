@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel
 
 load_dotenv()
@@ -72,7 +72,7 @@ SYSTEM_PROMPT = (
 
 def build_agent_executor():
 	"""Build the weather agent using classic APIs when available, otherwise use LangChain v1."""
-	llm = ChatOpenAI(model="gpt-4o-mini")
+	llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 	try:
 		from langchain.agents import AgentExecutor, create_openai_tools_agent
 
@@ -140,12 +140,12 @@ def chat(payload: ChatRequest) -> dict:
 		return {"response": answer}
 	except Exception as exc:
 		err = str(exc)
-		if "insufficient_quota" in err or "RateLimitError" in err or "Error code: 429" in err:
+		if "insufficient_quota" in err or "RateLimitError" in err or "Error code: 429" in err or "ResourceExhausted" in err or "RATE_LIMIT_EXCEEDED" in err:
 			raise HTTPException(
 				status_code=503,
 				detail=(
-					"OpenAI quota/rate-limit reached. "
-					"Update billing/quota or use a key/model with available credits."
+					"API quota/rate-limit reached. "
+					"Please wait a moment and try again."
 				),
 			) from exc
 		raise HTTPException(status_code=500, detail=f"Agent execution failed: {err}") from exc
