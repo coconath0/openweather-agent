@@ -387,8 +387,6 @@ These are worth knowing if you're modifying the codebase:
 
 - **Metric units as the source of truth.** The MCP server always returns Celsius and km/h. The °C/°F toggle in the frontend converts client-side. If you need to add more unit options (e.g., m/s for wind), add the toggle logic in the `WeatherPanel` component — no backend changes needed.
 
-- **Regex-based city extraction.** The weather panel extracts city names from user messages using a regex (`/(?:[Ii]n|[Ff]or|[Aa]t)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)/`). This is fragile — it won't match cities like "New York" if the user writes "what's new york weather" (lowercase). A more robust approach would be to have the agent backend return structured data (city name) alongside its text response.
-
 - **Dual data path.** The chat response comes through the agent backend, but the weather panel fetches directly from the MCP server. This means the panel data and the chat answer could theoretically be for different cities if the regex fails. This trade-off was made to keep the agent response format simple (plain text).
 
 - **LangChain version compatibility.** The `build_agent_executor()` function has a try/except around `create_openai_tools_agent` to handle different LangChain versions. If you pin `langchain` to a specific version, you can simplify this to just one code path.
