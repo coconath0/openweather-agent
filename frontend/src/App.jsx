@@ -4,6 +4,27 @@ import './App.css'
 const initialAgentMessage =
   'Hi! Ask me anything about the weather. Try: Should I go hiking in Austin this weekend?'
 
+function extractCityFromMessages(messages) {
+  const userMessages = messages.filter((m) => m.role === 'user')
+  if (!userMessages.length) return null
+
+  const text = userMessages[userMessages.length - 1].content
+  const match = text.match(/(?:[Ii]n|[Ff]or|[Aa]t)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)/)
+  return match ? match[1] : null
+}
+
+function getWeatherEmoji(description) {
+  if (!description) return '🌡️'
+  const d = description.toLowerCase()
+  if (d.includes('thunder')) return '⛈️'
+  if (d.includes('rain') || d.includes('drizzle')) return '🌧️'
+  if (d.includes('snow')) return '❄️'
+  if (d.includes('cloud') || d.includes('overcast')) return '☁️'
+  if (d.includes('clear') || d.includes('sun')) return '☀️'
+  if (d.includes('fog') || d.includes('mist') || d.includes('haze')) return '🌫️'
+  return '🌡️'
+}
+
 const themes = {
   dark: {
     pageBg: '#0f172a',
@@ -157,6 +178,124 @@ function MessageBubble({ role, content, theme }) {
   )
 }
 
+function WeatherPanel({ weatherData, loading }) {
+  if (loading) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          color: '#64748b',
+          fontSize: '0.95rem',
+          padding: 24,
+        }}
+      >
+        <p>Loading weather data…</p>
+      </div>
+    )
+  }
+
+  if (!weatherData) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          color: '#64748b',
+          fontSize: '1rem',
+          padding: 24,
+        }}
+      >
+        <p>Ask me about a city to see its forecast 🌍</p>
+      </div>
+    )
+  }
+
+  const { city, country, temperature, description, humidity, windSpeed, forecast } = weatherData
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, height: '100%' }}>
+      {/* City header */}
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b' }}>
+          {city}{country ? `, ${country}` : ''}
+        </h2>
+      </div>
+
+      {/* Current temperature */}
+      <div style={{ textAlign: 'center' }}>
+        <span style={{ fontSize: '3rem' }}>{getWeatherEmoji(description)}</span>
+        <div style={{ fontSize: '2.8rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>
+          {Math.round(temperature)}°F
+        </div>
+        <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#475569', textTransform: 'capitalize' }}>
+          {description}
+        </p>
+      </div>
+
+      {/* Humidity & wind */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 24,
+          padding: '12px 0',
+          borderTop: '1px solid #e2e8f0',
+          borderBottom: '1px solid #e2e8f0',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{humidity}%</div>
+          <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>Humidity</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{windSpeed} mph</div>
+          <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>Wind</div>
+        </div>
+      </div>
+
+      {/* 5-day forecast */}
+      {forecast && forecast.length > 0 && (
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <h3 style={{ margin: '0 0 10px', fontSize: '0.85rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            5-Day Forecast
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {forecast.map((day) => (
+              <div
+                key={day.date}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '8px 12px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: 10,
+                  boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
+                }}
+              >
+                <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500, width: 40 }}>
+                  {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+                </span>
+                <span style={{ fontSize: '1.2rem' }}>{getWeatherEmoji(day.description)}</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
+                  {Math.round(day.high)}°
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function App() {
   const [messages, setMessages] = useState([
     { role: 'agent', content: initialAgentMessage },
@@ -164,6 +303,8 @@ function App() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [dark, setDark] = useState(true)
+  const [weatherData, setWeatherData] = useState(null)
+  const [weatherLoading, setWeatherLoading] = useState(false)
   const messagesEndRef = useRef(null)
   const theme = dark ? themes.dark : themes.light
 
@@ -174,6 +315,46 @@ function App() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, sending])
+
+  useEffect(() => {
+    const last = messages[messages.length - 1]
+    if (!last || last.role !== 'agent' || messages.length <= 1) return
+
+    const city = extractCityFromMessages(messages)
+    if (!city) return
+
+    let cancelled = false
+    setWeatherLoading(true)
+
+    Promise.all([
+      fetch(`http://localhost:8000/current-weather?city=${encodeURIComponent(city)}`).then((r) => r.ok ? r.json() : null),
+      fetch(`http://localhost:8000/forecast?city=${encodeURIComponent(city)}&days=5`).then((r) => r.ok ? r.json() : null),
+    ])
+      .then(([current, forecast]) => {
+        if (cancelled) return
+        if (current) {
+          setWeatherData({
+            city: current.city,
+            country: current.country || '',
+            temperature: current.temperature_fahrenheit,
+            description: current.description,
+            humidity: current.humidity,
+            windSpeed: current.wind_speed_mph,
+            forecast: forecast?.forecast?.map((d) => ({
+              date: d.date,
+              high: d.high_temp_fahrenheit,
+              description: d.description,
+            })) || [],
+          })
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setWeatherLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [messages])
 
   const sendMessage = async () => {
     const text = input.trim()
@@ -239,14 +420,15 @@ function App() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 16,
+        gap: 16,
         backgroundColor: theme.pageBg,
         transition: 'background-color 0.3s',
       }}
     >
-      {/* ---- chat card ---- */}
+      {/* ---- left column: chat card (65%) ---- */}
       <div
         style={{
-          width: '100%',
+          width: '65%',
           maxWidth: 860,
           height: '100%',
           maxHeight: 940,
@@ -399,6 +581,22 @@ function App() {
             </button>
           </div>
         </footer>
+      </div>
+
+      {/* ---- right column: weather panel (35%) ---- */}
+      <div
+        style={{
+          width: '35%',
+          height: '100%',
+          maxHeight: 940,
+          backgroundColor: '#f0f8ff',
+          borderRadius: 20,
+          boxShadow: '0 4px 16px rgba(15,23,42,0.06)',
+          padding: 24,
+          overflow: 'auto',
+        }}
+      >
+        <WeatherPanel weatherData={weatherData} loading={weatherLoading} />
       </div>
     </div>
   )
