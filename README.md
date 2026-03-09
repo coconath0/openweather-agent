@@ -427,7 +427,6 @@ Edit the `SYSTEM_PROMPT` string in `agent-backend/main.py`. This controls the ag
 ## Known Limitations
 
 - **No conversation memory** — each message to the agent is independent. The agent can't reference earlier messages in the conversation.
-- **City extraction is regex-based** — the weather panel won't populate if the user doesn't use recognizable patterns like "in London" or "for Tokyo".
 - **No auth** — all services are open. Fine for local development, but you'd need to add authentication before any kind of deployment.
 - **Gemini free tier rate limits** — 15 requests per minute. Under heavy use you'll hit 503 errors. The frontend handles this gracefully with a user-friendly message.
 - **No tests** — there are currently no unit or integration tests for any of the three services.
