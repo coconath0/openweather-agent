@@ -10,6 +10,7 @@ A conversational weather assistant that lets you ask about current conditions an
 
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
+- [Docker Quick Start](#docker-quick-start)
 - [Local Development Setup](#local-development-setup)
   - [Prerequisites](#prerequisites)
   - [1. MCP Server](#1-mcp-server)
@@ -43,7 +44,7 @@ The app is split into **three independent services** that communicate over HTTP.
          │  GET (weather panel)        ▼
          │  ────────────────▶  ┌──────────────┐
          │                     │ Google Gemini │
-         └─────────────────▶   │ (gemini-2.0- │
+         └─────────────────▶   │ (gemini-2.5- │
            (also fetches       │  flash)       │
             MCP directly       └──────────────┘
             for the side
@@ -62,17 +63,26 @@ The app is split into **three independent services** that communicate over HTTP.
 ```
 openweather-agent/
 ├── README.md
+├── docker-compose.yml              # One-command startup for all services
+├── .dockerignore                   # Root-level Docker ignore
+│
 ├── mcp-server/                     # Service 1: weather data proxy
 │   ├── main.py                     # Single-file FastAPI app
+│   ├── Dockerfile
+│   ├── .dockerignore
 │   ├── requirements.txt
 │   └── .env                        # OPENWEATHER_API_KEY (you create this)
 │
 ├── agent-backend/                  # Service 2: LangChain chat agent
 │   ├── main.py                     # Single-file FastAPI app
+│   ├── Dockerfile
+│   ├── .dockerignore
 │   ├── requirements.txt
 │   └── .env                        # GOOGLE_API_KEY, MCP_SERVER_URL (you create this)
 │
 └── frontend/                       # Service 3: React chat UI
+    ├── Dockerfile
+    ├── .dockerignore
     ├── package.json                # React 19, Vite 7
     ├── vite.config.js
     ├── index.html
@@ -87,16 +97,57 @@ openweather-agent/
 
 ---
 
+## Docker Quick Start
+
+The fastest way to run all three services with a single command.
+
+**1. Create your `.env` files** (still required — Docker reads them at runtime):
+
+`mcp-server/.env`:
+```env
+OPENWEATHER_API_KEY=your_key_here
+```
+
+`agent-backend/.env`:
+```env
+MCP_SERVER_URL=http://127.0.0.1:8000
+GOOGLE_API_KEY=your_key_here
+```
+
+**2. Build and start everything:**
+
+```bash
+docker compose up --build
+```
+
+This starts all three services:
+- **MCP Server** → http://localhost:8000
+- **Agent Backend** → http://localhost:8001
+- **Frontend** → http://localhost:5173
+
+Open **http://localhost:5173** and start chatting.
+
+> **Note:** Docker Compose overrides `MCP_SERVER_URL` to `http://mcp-server:8000` for container-to-container networking. The value in your `.env` file is used only for local development outside Docker.
+
+To stop all services:
+
+```bash
+docker compose down
+```
+
+---
+
 ## Local Development Setup
 
-All three services must be running simultaneously. Start them in separate terminals, in order.
+Alternatively, you can run each service manually for development (hot-reload, debugger access, etc.). Start them in separate terminals, in order.
 
 ### Prerequisites
 
 | Requirement            | Minimum Version | Notes                            |
 |------------------------|-----------------|----------------------------------|
-| Python                 | 3.11+           | Both backend services            |
-| Node.js                | 18+             | Frontend dev server              |
+| Python                 | 3.11+           | Both backend services (local dev only) |
+| Node.js                | 20+             | Frontend dev server (local dev only) |
+| Docker                 | 20+             | For Docker Quick Start (optional) |
 | OpenWeather API key    | —               | Free tier works                  |
 | Google Gemini API key  | —               | Free tier: 15 req/min, 1M tokens/day |
 
@@ -397,3 +448,6 @@ Edit the `SYSTEM_PROMPT` string in `agent-backend/main.py`. This controls the ag
 | `Could not import module "main"` | Running uvicorn from wrong directory | `cd` into the service folder first, or use `--app-dir`. |
 | Weather panel doesn't populate | City regex didn't match | Try phrasing like "What's the weather in London?" (capitalized city name after "in/for/at"). |
 | First chat message is slow | Lazy agent initialization | Expected. The LLM and agent are built on the first request. Subsequent messages are faster. |
+| Docker build fails with network errors | No internet during build | Ensure Docker has network access. On corporate networks, configure Docker's DNS settings. |
+| `docker compose up` exits immediately | Missing `.env` files or bad API keys | Create both `.env` files before running. Check logs with `docker compose logs <service-name>`. |
+| Port already in use with Docker | Another process on 8000/8001/5173 | Stop the other process, or change port mappings in `docker-compose.yml` (e.g., `"9000:8000"`). |
