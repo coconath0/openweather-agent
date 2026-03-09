@@ -37,7 +37,7 @@ async def current_weather(
 ):
     """
     Get current weather for a city.
-    Returns: city name, temperature (°F), description, humidity, wind speed.
+    Returns: city name, temperature (°C), description, humidity, wind speed.
     """
     api_key = os.getenv("OPENWEATHER_API_KEY")
     if not api_key or not api_key.strip():
@@ -88,14 +88,14 @@ async def current_weather(
         lon = locations[0]["lon"]
         name = locations[0].get("name", city.strip())
 
-        # Fetch current weather (imperial = Fahrenheit, wind in mph)
+        # Fetch current weather (metric = Celsius, wind in m/s)
         weather = await client.get(
             WEATHER_URL,
             params={
                 "lat": lat,
                 "lon": lon,
                 "appid": api_key,
-                "units": "imperial",
+                "units": "metric",
             },
         )
         if weather.status_code == 401:
@@ -130,10 +130,10 @@ async def current_weather(
 
     return {
         "city": name,
-        "temperature_fahrenheit": main.get("temp"),
+        "temperature_celsius": main.get("temp"),
         "description": description,
         "humidity": main.get("humidity"),
-        "wind_speed_mph": wind.get("speed"),
+        "wind_speed_kmh": round(wind.get("speed", 0) * 3.6, 1),
     }
 
 
@@ -144,7 +144,7 @@ async def forecast(
 ):
     """
     Get weather forecast for a city.
-    Returns daily summary: date, high temp (°F), low temp (°F), description.
+    Returns daily summary: date, high temp (°C), low temp (°C), description.
     """
     api_key = os.getenv("OPENWEATHER_API_KEY")
     if not api_key or not api_key.strip():
@@ -193,14 +193,14 @@ async def forecast(
         lat = locations[0]["lat"]
         lon = locations[0]["lon"]
 
-        # Fetch 5-day forecast (imperial = Fahrenheit)
+        # Fetch 5-day forecast (metric = Celsius)
         forecast_resp = await client.get(
             FORECAST_URL,
             params={
                 "lat": lat,
                 "lon": lon,
                 "appid": api_key,
-                "units": "imperial",
+                "units": "metric",
             },
         )
         if forecast_resp.status_code == 401:
@@ -266,8 +266,8 @@ async def forecast(
         description = entries[0].get("description", "") if entries else ""
         daily.append({
             "date": date_key,
-            "high_temp_fahrenheit": high,
-            "low_temp_fahrenheit": low,
+            "high_temp_celsius": high,
+            "low_temp_celsius": low,
             "description": description,
         })
 

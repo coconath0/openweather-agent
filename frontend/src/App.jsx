@@ -179,6 +179,11 @@ function MessageBubble({ role, content, theme }) {
 }
 
 function WeatherPanel({ weatherData, loading }) {
+  const [useFahrenheit, setUseFahrenheit] = useState(false)
+  const toF = (c) => c * 9 / 5 + 32
+  const displayTemp = (c) => Math.round(useFahrenheit ? toF(c) : c)
+  const unit = useFahrenheit ? '°F' : '°C'
+
   if (loading) {
     return (
       <div
@@ -221,18 +226,47 @@ function WeatherPanel({ weatherData, loading }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, height: '100%' }}>
-      {/* City header */}
+      {/* City header + unit toggle */}
       <div style={{ textAlign: 'center' }}>
         <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b' }}>
           {city}{country ? `, ${country}` : ''}
         </h2>
+        <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 0 }}>
+          <button
+            onClick={() => setUseFahrenheit(false)}
+            style={{
+              padding: '4px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              border: '1px solid #cbd5e1',
+              borderRight: 'none',
+              borderRadius: '6px 0 0 6px',
+              cursor: 'pointer',
+              backgroundColor: !useFahrenheit ? '#3b82f6' : '#f1f5f9',
+              color: !useFahrenheit ? '#fff' : '#475569',
+            }}
+          >°C</button>
+          <button
+            onClick={() => setUseFahrenheit(true)}
+            style={{
+              padding: '4px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              border: '1px solid #cbd5e1',
+              borderRadius: '0 6px 6px 0',
+              cursor: 'pointer',
+              backgroundColor: useFahrenheit ? '#3b82f6' : '#f1f5f9',
+              color: useFahrenheit ? '#fff' : '#475569',
+            }}
+          >°F</button>
+        </div>
       </div>
 
       {/* Current temperature */}
       <div style={{ textAlign: 'center' }}>
         <span style={{ fontSize: '3rem' }}>{getWeatherEmoji(description)}</span>
         <div style={{ fontSize: '2.8rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>
-          {Math.round(temperature)}°F
+          {displayTemp(temperature)}{unit}
         </div>
         <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#475569', textTransform: 'capitalize' }}>
           {description}
@@ -255,7 +289,7 @@ function WeatherPanel({ weatherData, loading }) {
           <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>Humidity</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{windSpeed} mph</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{windSpeed} km/h</div>
           <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>Wind</div>
         </div>
       </div>
@@ -285,7 +319,7 @@ function WeatherPanel({ weatherData, loading }) {
                 </span>
                 <span style={{ fontSize: '1.2rem' }}>{getWeatherEmoji(day.description)}</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
-                  {Math.round(day.high)}°
+                  {displayTemp(day.high)}°
                 </span>
               </div>
             ))}
@@ -336,13 +370,13 @@ function App() {
           setWeatherData({
             city: current.city,
             country: current.country || '',
-            temperature: current.temperature_fahrenheit,
+            temperature: current.temperature_celsius,
             description: current.description,
             humidity: current.humidity,
-            windSpeed: current.wind_speed_mph,
+            windSpeed: current.wind_speed_kmh,
             forecast: forecast?.forecast?.map((d) => ({
               date: d.date,
-              high: d.high_temp_fahrenheit,
+              high: d.high_temp_celsius,
               description: d.description,
             })) || [],
           })
