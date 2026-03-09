@@ -18,28 +18,28 @@
   background: transparent;
 }
 .chat-messages::-webkit-scrollbar-thumb {
-  background: var(--slate-600);
+  background: var(--teal-700);
   border-radius: 3px;
 }
 .chat-messages::-webkit-scrollbar-thumb:hover {
-  background: var(--slate-500);
+  background: var(--teal-500);
 }
 body[data-theme='light'] .chat-messages::-webkit-scrollbar-thumb {
-  background: var(--slate-300);
+  background: var(--grey-300);
 }
 body[data-theme='light'] .chat-messages::-webkit-scrollbar-thumb:hover {
-  background: var(--slate-400);
+  background: var(--grey-400);
 }
 
 /* ---- input focus ring ---- */
 .chat-input:focus {
-  border-color: var(--blue-600);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(116, 178, 242, 0.2);
 }
 
 /* ---- send button hover ---- */
 .send-btn:not(:disabled):hover {
-  background-color: var(--blue-700) !important;
+  background-color: var(--blue-600) !important;
 }
 .send-btn:not(:disabled):active {
   transform: scale(0.97);

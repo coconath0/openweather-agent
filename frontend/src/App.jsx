@@ -27,52 +27,52 @@ function getWeatherEmoji(description) {
 
 const themes = {
   dark: {
-    pageBg: 'var(--slate-900)',
-    cardBg: 'var(--slate-800)',
-    cardBorder: 'var(--slate-700)',
+    pageBg: 'var(--green-950)',
+    cardBg: 'var(--green-800)',
+    cardBorder: 'var(--teal-700)',
     cardShadow: '0 12px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)',
-    headerGradient: 'linear-gradient(135deg, var(--blue-800), var(--blue-400))',
-    messagesBg: 'var(--slate-900)',
-    agentBubbleBg: 'var(--slate-700)',
-    agentBubbleColor: 'var(--slate-200)',
+    headerGradient: 'linear-gradient(135deg, var(--green-800), var(--teal-700))',
+    messagesBg: 'var(--green-950)',
+    agentBubbleBg: 'var(--teal-700)',
+    agentBubbleColor: 'var(--grey-200)',
     agentBubbleShadow: '0 1px 4px rgba(0,0,0,0.3)',
-    userBubbleBg: 'var(--blue-600)',
+    userBubbleBg: 'var(--blue-500)',
     userBubbleColor: 'var(--white)',
-    userBubbleShadow: '0 2px 8px rgba(59,130,246,0.3)',
-    typingDotColor: 'var(--slate-500)',
-    footerBg: 'var(--slate-800)',
-    footerBorder: 'var(--slate-700)',
-    inputBg: 'var(--slate-900)',
-    inputBgDisabled: 'var(--slate-800)',
-    inputBorder: 'var(--slate-600)',
-    inputColor: 'var(--slate-200)',
-    inputPlaceholder: 'var(--slate-500)',
-    sendBgActive: 'var(--blue-600)',
-    sendBgDisabled: 'var(--slate-600)',
+    userBubbleShadow: '0 2px 8px rgba(116,178,242,0.3)',
+    typingDotColor: 'var(--teal-500)',
+    footerBg: 'var(--green-800)',
+    footerBorder: 'var(--teal-700)',
+    inputBg: 'var(--green-950)',
+    inputBgDisabled: 'var(--green-800)',
+    inputBorder: 'var(--teal-600)',
+    inputColor: 'var(--grey-200)',
+    inputPlaceholder: 'var(--teal-500)',
+    sendBgActive: 'var(--sage-500)',
+    sendBgDisabled: 'var(--teal-600)',
   },
   light: {
-    pageBg: 'var(--alice-blue)',
+    pageBg: 'var(--grey-50)',
     cardBg: 'var(--white)',
-    cardBorder: 'var(--slate-200)',
-    cardShadow: '0 12px 40px rgba(15,23,42,0.09), 0 2px 8px rgba(15,23,42,0.04)',
-    headerGradient: 'linear-gradient(135deg, var(--blue-600), var(--blue-500))',
-    messagesBg: 'var(--slate-50)',
-    agentBubbleBg: 'var(--slate-100)',
-    agentBubbleColor: 'var(--slate-800)',
-    agentBubbleShadow: '0 1px 4px rgba(15,23,42,0.06)',
-    userBubbleBg: 'var(--blue-600)',
+    cardBorder: 'var(--grey-200)',
+    cardShadow: '0 12px 40px rgba(36,59,50,0.08), 0 2px 8px rgba(36,59,50,0.04)',
+    headerGradient: 'linear-gradient(135deg, var(--sage-500), var(--blue-500))',
+    messagesBg: 'var(--grey-100)',
+    agentBubbleBg: 'var(--grey-200)',
+    agentBubbleColor: 'var(--green-800)',
+    agentBubbleShadow: '0 1px 4px rgba(36,59,50,0.06)',
+    userBubbleBg: 'var(--blue-500)',
     userBubbleColor: 'var(--white)',
-    userBubbleShadow: '0 2px 8px rgba(59,130,246,0.2)',
-    typingDotColor: 'var(--slate-400)',
+    userBubbleShadow: '0 2px 8px rgba(116,178,242,0.2)',
+    typingDotColor: 'var(--grey-400)',
     footerBg: 'var(--white)',
-    footerBorder: 'var(--slate-200)',
+    footerBorder: 'var(--grey-200)',
     inputBg: 'var(--white)',
-    inputBgDisabled: 'var(--slate-100)',
-    inputBorder: 'var(--slate-300)',
-    inputColor: 'var(--slate-800)',
-    inputPlaceholder: 'var(--slate-400)',
-    sendBgActive: 'var(--blue-600)',
-    sendBgDisabled: 'var(--slate-300)',
+    inputBgDisabled: 'var(--grey-100)',
+    inputBorder: 'var(--grey-300)',
+    inputColor: 'var(--green-800)',
+    inputPlaceholder: 'var(--grey-400)',
+    sendBgActive: 'var(--sage-500)',
+    sendBgDisabled: 'var(--grey-300)',
   },
 }
 
@@ -101,13 +101,13 @@ function AgentAvatar() {
         width: 32,
         height: 32,
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #38bdf8, #3b82f6)',
+        background: 'linear-gradient(135deg, var(--sage-500), var(--blue-500))',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: '0.9rem',
         flexShrink: 0,
-        boxShadow: '0 2px 6px rgba(59,130,246,0.25)',
+        boxShadow: '0 2px 6px rgba(164,190,116,0.3)',
       }}
     >
       ☀️
@@ -193,7 +193,7 @@ function WeatherPanel({ weatherData, loading }) {
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-          color: '#64748b',
+          color: 'var(--teal-500)',
           fontSize: '0.95rem',
           padding: 24,
         }}
@@ -212,7 +212,7 @@ function WeatherPanel({ weatherData, loading }) {
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-          color: '#64748b',
+          color: 'var(--teal-500)',
           fontSize: '1rem',
           padding: 24,
         }}
@@ -228,7 +228,7 @@ function WeatherPanel({ weatherData, loading }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, height: '100%' }}>
       {/* City header + unit toggle */}
       <div style={{ textAlign: 'center' }}>
-        <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b' }}>
+        <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--green-800)' }}>
           {city}{country ? `, ${country}` : ''}
         </h2>
         <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 0 }}>
@@ -238,12 +238,12 @@ function WeatherPanel({ weatherData, loading }) {
               padding: '4px 12px',
               fontSize: '0.75rem',
               fontWeight: 600,
-              border: '1px solid #cbd5e1',
+              border: '1px solid var(--grey-300)',
               borderRight: 'none',
               borderRadius: '6px 0 0 6px',
               cursor: 'pointer',
-              backgroundColor: !useFahrenheit ? '#3b82f6' : '#f1f5f9',
-              color: !useFahrenheit ? '#fff' : '#475569',
+              backgroundColor: !useFahrenheit ? 'var(--blue-500)' : 'var(--grey-100)',
+              color: !useFahrenheit ? 'var(--white)' : 'var(--teal-700)',
             }}
           >°C</button>
           <button
@@ -252,11 +252,11 @@ function WeatherPanel({ weatherData, loading }) {
               padding: '4px 12px',
               fontSize: '0.75rem',
               fontWeight: 600,
-              border: '1px solid #cbd5e1',
+              border: '1px solid var(--grey-300)',
               borderRadius: '0 6px 6px 0',
               cursor: 'pointer',
-              backgroundColor: useFahrenheit ? '#3b82f6' : '#f1f5f9',
-              color: useFahrenheit ? '#fff' : '#475569',
+              backgroundColor: useFahrenheit ? 'var(--blue-500)' : 'var(--grey-100)',
+              color: useFahrenheit ? 'var(--white)' : 'var(--teal-700)',
             }}
           >°F</button>
         </div>
@@ -265,10 +265,10 @@ function WeatherPanel({ weatherData, loading }) {
       {/* Current temperature */}
       <div style={{ textAlign: 'center' }}>
         <span style={{ fontSize: '3rem' }}>{getWeatherEmoji(description)}</span>
-        <div style={{ fontSize: '2.8rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>
+        <div style={{ fontSize: '2.8rem', fontWeight: 700, color: 'var(--green-800)', lineHeight: 1.1 }}>
           {displayTemp(temperature)}{unit}
         </div>
-        <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#475569', textTransform: 'capitalize' }}>
+        <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: 'var(--teal-700)', textTransform: 'capitalize' }}>
           {description}
         </p>
       </div>
@@ -280,24 +280,24 @@ function WeatherPanel({ weatherData, loading }) {
           justifyContent: 'center',
           gap: 24,
           padding: '12px 0',
-          borderTop: '1px solid #e2e8f0',
-          borderBottom: '1px solid #e2e8f0',
+          borderTop: '1px solid var(--grey-200)',
+          borderBottom: '1px solid var(--grey-200)',
         }}
       >
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{humidity}%</div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>Humidity</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--green-800)' }}>{humidity}%</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 500 }}>Humidity</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>{windSpeed} km/h</div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>Wind</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--green-800)' }}>{windSpeed} km/h</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 500 }}>Wind</div>
         </div>
       </div>
 
       {/* 5-day forecast */}
       {forecast && forecast.length > 0 && (
         <div style={{ flex: 1, overflow: 'auto' }}>
-          <h3 style={{ margin: '0 0 10px', fontSize: '0.85rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <h3 style={{ margin: '0 0 10px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--teal-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             5-Day Forecast
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -309,16 +309,16 @@ function WeatherPanel({ weatherData, loading }) {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '8px 12px',
-                  backgroundColor: '#ffffff',
+                  backgroundColor: 'var(--white)',
                   borderRadius: 10,
-                  boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
+                  boxShadow: '0 1px 3px rgba(36,59,50,0.04)',
                 }}
               >
-                <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500, width: 40 }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--teal-700)', fontWeight: 500, width: 40 }}>
                   {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
                 </span>
                 <span style={{ fontSize: '1.2rem' }}>{getWeatherEmoji(day.description)}</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-800)' }}>
                   {displayTemp(day.high)}°
                 </span>
               </div>
@@ -623,9 +623,9 @@ function App() {
           width: '35%',
           height: '100%',
           maxHeight: 940,
-          backgroundColor: '#f0f8ff',
+          backgroundColor: 'var(--sage-300)',
           borderRadius: 20,
-          boxShadow: '0 4px 16px rgba(15,23,42,0.06)',
+          boxShadow: '0 4px 16px rgba(36,59,50,0.08)',
           padding: 24,
           overflow: 'auto',
         }}
