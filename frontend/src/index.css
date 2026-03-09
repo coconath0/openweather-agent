@@ -1,26 +1,42 @@
 :root {
-  /* Slate palette */
-  --slate-900: #0f172a;
-  --slate-800: #1e293b;
-  --slate-700: #334155;
-  --slate-600: #475569;
-  --slate-500: #64748b;
-  --slate-400: #94a3b8;
-  --slate-300: #cbd5e1;
-  --slate-200: #e2e8f0;
-  --slate-100: #f1f5f9;
-  --slate-50: #f8fafc;
+  /* Emerald Passage – dark greens */
+  --green-950: #121e19;
+  --green-900: #1a2b25;
+  --green-800: #243B32;
+  --green-700: #2f4d42;
+  --green-600: #3d6354;
 
-  /* Blue palette */
-  --blue-800: #1e40af;
-  --blue-700: #2563eb;
-  --blue-600: #3b82f6;
-  --blue-500: #0ea5e9;
-  --blue-400: #0369a1;
+  /* Peacock Bliss – teal/slate */
+  --teal-700: #41616C;
+  --teal-600: #527880;
+  --teal-500: #6b8f98;
+  --teal-400: #8aabb3;
+  --teal-300: #accfc6;
+
+  /* Indigo Daylight – blues */
+  --blue-600: #5a9ae0;
+  --blue-500: #74B2F2;
+  --blue-400: #96c6f7;
+  --blue-300: #b8dafc;
+
+  /* Lush & Glorious – sage greens */
+  --sage-700: #7a9e4e;
+  --sage-600: #8daa5e;
+  --sage-500: #A4BE74;
+  --sage-400: #b8ce92;
+  --sage-300: #d0e0b8;
+
+  /* Heaven's Whisper – light greys */
+  --grey-800: #2d3436;
+  --grey-600: #636e72;
+  --grey-400: #a0aab0;
+  --grey-300: #c5c8ca;
+  --grey-200: #DBDEDD;
+  --grey-100: #eef0f0;
+  --grey-50: #f5f7f6;
 
   /* Neutral */
   --white: #ffffff;
-  --alice-blue: #f0f8ff;
 }
 
 *, *::before, *::after {
@@ -38,8 +54,8 @@ body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: var(--slate-200);
-  background-color: var(--slate-900);
+  color: var(--grey-200);
+  background-color: var(--green-950);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -48,6 +64,6 @@ body {
 }
 
 body[data-theme='light'] {
-  color: var(--slate-800);
-  background-color: var(--alice-blue);
+  color: var(--grey-800);
+  background-color: var(--grey-50);
 }
