@@ -178,11 +178,52 @@ function MessageBubble({ role, content, theme }) {
   )
 }
 
+function ForecastList({ forecast, displayTemp }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {forecast.map((day) => (
+        <div
+          key={day.date}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 12px',
+            backgroundColor: 'var(--white)',
+            borderRadius: 10,
+            boxShadow: '0 1px 3px rgba(36,59,50,0.04)',
+          }}
+        >
+          <span style={{ fontSize: '0.85rem', color: 'var(--teal-700)', fontWeight: 500, width: 40 }}>
+            {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+          </span>
+          <span style={{ fontSize: '1.2rem' }}>{getWeatherEmoji(day.description)}</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-800)' }}>
+            {displayTemp(day.high)}°
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function WeatherPanel({ weatherData, loading }) {
   const [useFahrenheit, setUseFahrenheit] = useState(false)
+  const [swiped, setSwiped] = useState(false)
+  const swiperRef = useRef(null)
   const toF = (c) => c * 9 / 5 + 32
   const displayTemp = (c) => Math.round(useFahrenheit ? toF(c) : c)
   const unit = useFahrenheit ? '°F' : '°C'
+
+  // Reset carousel position when a new city loads
+  useEffect(() => {
+    setSwiped(false)
+    if (swiperRef.current) swiperRef.current.scrollLeft = 0
+  }, [weatherData])
+
+  const handleScroll = () => {
+    if (swiperRef.current && swiperRef.current.scrollLeft > 10) setSwiped(true)
+  }
 
   if (loading) {
     return (
@@ -223,107 +264,112 @@ function WeatherPanel({ weatherData, loading }) {
   }
 
   const { city, country, temperature, description, humidity, windSpeed, forecast } = weatherData
+  const hasForecast = forecast && forecast.length > 0
+
+  const unitToggle = (
+    <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 0 }}>
+      <button
+        onClick={() => setUseFahrenheit(false)}
+        style={{
+          padding: '4px 12px',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          border: '1px solid var(--grey-300)',
+          borderRight: 'none',
+          borderRadius: '6px 0 0 6px',
+          cursor: 'pointer',
+          backgroundColor: !useFahrenheit ? 'var(--blue-500)' : 'var(--grey-100)',
+          color: !useFahrenheit ? 'var(--white)' : 'var(--teal-700)',
+        }}
+      >°C</button>
+      <button
+        onClick={() => setUseFahrenheit(true)}
+        style={{
+          padding: '4px 12px',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          border: '1px solid var(--grey-300)',
+          borderRadius: '0 6px 6px 0',
+          cursor: 'pointer',
+          backgroundColor: useFahrenheit ? 'var(--blue-500)' : 'var(--grey-100)',
+          color: useFahrenheit ? 'var(--white)' : 'var(--teal-700)',
+        }}
+      >°F</button>
+    </div>
+  )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, height: '100%' }}>
-      {/* City header + unit toggle */}
-      <div style={{ textAlign: 'center' }}>
-        <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--green-800)' }}>
-          {city}{country ? `, ${country}` : ''}
-        </h2>
-        <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 0 }}>
-          <button
-            onClick={() => setUseFahrenheit(false)}
-            style={{
-              padding: '4px 12px',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              border: '1px solid var(--grey-300)',
-              borderRight: 'none',
-              borderRadius: '6px 0 0 6px',
-              cursor: 'pointer',
-              backgroundColor: !useFahrenheit ? 'var(--blue-500)' : 'var(--grey-100)',
-              color: !useFahrenheit ? 'var(--white)' : 'var(--teal-700)',
-            }}
-          >°C</button>
-          <button
-            onClick={() => setUseFahrenheit(true)}
-            style={{
-              padding: '4px 12px',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              border: '1px solid var(--grey-300)',
-              borderRadius: '0 6px 6px 0',
-              cursor: 'pointer',
-              backgroundColor: useFahrenheit ? 'var(--blue-500)' : 'var(--grey-100)',
-              color: useFahrenheit ? 'var(--white)' : 'var(--teal-700)',
-            }}
-          >°F</button>
-        </div>
-      </div>
+    <div style={{ position: 'relative', height: '100%' }}>
+      <div className="weather-swiper" ref={swiperRef} onScroll={handleScroll}>
 
-      {/* Current temperature */}
-      <div style={{ textAlign: 'center' }}>
-        <span style={{ fontSize: '3rem' }}>{getWeatherEmoji(description)}</span>
-        <div style={{ fontSize: '2.8rem', fontWeight: 700, color: 'var(--green-800)', lineHeight: 1.1 }}>
-          {displayTemp(temperature)}{unit}
-        </div>
-        <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: 'var(--teal-700)', textTransform: 'capitalize' }}>
-          {description}
-        </p>
-      </div>
-
-      {/* Humidity & wind */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 24,
-          padding: '12px 0',
-          borderTop: '1px solid var(--grey-200)',
-          borderBottom: '1px solid var(--grey-200)',
-        }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--green-800)' }}>{humidity}%</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 500 }}>Humidity</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--green-800)' }}>{windSpeed} km/h</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 500 }}>Wind</div>
-        </div>
-      </div>
-
-      {/* 5-day forecast */}
-      {forecast && forecast.length > 0 && (
-        <div style={{ flex: 1, overflow: 'auto' }}>
-          <h3 style={{ margin: '0 0 10px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--teal-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            5-Day Forecast
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {forecast.map((day) => (
-              <div
-                key={day.date}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '8px 12px',
-                  backgroundColor: 'var(--white)',
-                  borderRadius: 10,
-                  boxShadow: '0 1px 3px rgba(36,59,50,0.04)',
-                }}
-              >
-                <span style={{ fontSize: '0.85rem', color: 'var(--teal-700)', fontWeight: 500, width: 40 }}>
-                  {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
-                </span>
-                <span style={{ fontSize: '1.2rem' }}>{getWeatherEmoji(day.description)}</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-800)' }}>
-                  {displayTemp(day.high)}°
-                </span>
-              </div>
-            ))}
+        {/* ── Slide 1: current conditions ── */}
+        <div className="weather-slide">
+          {/* City + unit toggle */}
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--green-800)' }}>
+              {city}{country ? `, ${country}` : ''}
+            </h2>
+            {unitToggle}
           </div>
+
+          {/* Temperature */}
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: '3rem' }}>{getWeatherEmoji(description)}</span>
+            <div style={{ fontSize: '2.8rem', fontWeight: 700, color: 'var(--green-800)', lineHeight: 1.1 }}>
+              {displayTemp(temperature)}{unit}
+            </div>
+            <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: 'var(--teal-700)', textTransform: 'capitalize' }}>
+              {description}
+            </p>
+          </div>
+
+          {/* Humidity & wind */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 24,
+              padding: '12px 0',
+              borderTop: '1px solid var(--grey-200)',
+              borderBottom: '1px solid var(--grey-200)',
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--green-800)' }}>{humidity}%</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 500 }}>Humidity</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--green-800)' }}>{windSpeed} km/h</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--teal-400)', fontWeight: 500 }}>Wind</div>
+            </div>
+          </div>
+
+          {/* Forecast inline — desktop only */}
+          {hasForecast && (
+            <div className="forecast-desktop" style={{ flex: 1, overflow: 'auto' }}>
+              <h3 style={{ margin: '0 0 10px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--teal-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                5-Day Forecast
+              </h3>
+              <ForecastList forecast={forecast} displayTemp={displayTemp} />
+            </div>
+          )}
+        </div>
+
+        {/* ── Slide 2: 5-day forecast — mobile only ── */}
+        {hasForecast && (
+          <div className="weather-slide forecast-slide">
+            <h3 style={{ margin: '0 0 12px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--teal-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              5-Day Forecast
+            </h3>
+            <ForecastList forecast={forecast} displayTemp={displayTemp} />
+          </div>
+        )}
+      </div>
+
+      {/* Swipe hint — mobile only, disappears after first swipe */}
+      {hasForecast && !swiped && (
+        <div className="swipe-hint" aria-hidden="true">
+          5-day &rsaquo;
         </div>
       )}
     </div>
@@ -450,24 +496,13 @@ function App() {
 
   return (
     <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 16,
-        gap: 16,
-        backgroundColor: theme.pageBg,
-        transition: 'background-color 0.3s',
-      }}
+      className="app-root"
+      style={{ backgroundColor: theme.pageBg }}
     >
-      {/* ---- left column: chat card (65%) ---- */}
+      {/* ---- left / top: chat card ---- */}
       <div
+        className="chat-card"
         style={{
-          width: '65%',
-          maxWidth: 860,
-          height: '100%',
-          maxHeight: 940,
           backgroundColor: theme.cardBg,
           borderRadius: 20,
           boxShadow: theme.cardShadow,
@@ -619,17 +654,13 @@ function App() {
         </footer>
       </div>
 
-      {/* ---- right column: weather panel (35%) ---- */}
+      {/* ---- right / bottom: weather panel ---- */}
       <div
+        className="weather-card"
         style={{
-          width: '35%',
-          height: '100%',
-          maxHeight: 940,
           backgroundColor: 'var(--sage-300)',
           borderRadius: 20,
           boxShadow: '0 4px 16px rgba(36,59,50,0.08)',
-          padding: 24,
-          overflow: 'auto',
         }}
       >
         <WeatherPanel weatherData={weatherData} loading={weatherLoading} />
