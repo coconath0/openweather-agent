@@ -1,5 +1,5 @@
 langchain
-langchain-google-genai
+langchain-groq
 requests
 python-dotenv
 fastapi

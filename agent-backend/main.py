@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from pydantic import BaseModel
 
 load_dotenv()
@@ -67,15 +67,17 @@ SYSTEM_PROMPT = (
 	"You are a helpful weather assistant. When a user asks a weather-related question, "
 	"use your tools to get real data before answering. Always mention the city name in "
 	"your response. Be conversational and give practical advice based on the weather, "
-	"for example, suggest activities or what to wear."
+	"for example, suggest activities or what to wear. "
+	"When calling weather tools, pass only the city name without state, province, or country "
+	"(e.g. use 'San Marcos' not 'San Marcos, TX')."
 )
 
 
 def build_agent_executor():
 	"""Build the weather agent using classic APIs when available, otherwise use LangChain v1."""
-	llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+	llm = ChatGroq(model="llama-3.1-8b-instant")
 	try:
-		from langchain.agents import AgentExecutor, create_openai_tools_agent
+		from langchain.agents import AgentExecutor, create_tool_calling_agent
 
 		prompt = ChatPromptTemplate.from_messages(
 			[
@@ -84,7 +86,7 @@ def build_agent_executor():
 				MessagesPlaceholder("agent_scratchpad"),
 			]
 		)
-		agent = create_openai_tools_agent(llm=llm, tools=tools, prompt=prompt)
+		agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
 		return AgentExecutor(agent=agent, tools=tools, verbose=True), "classic"
 	except ImportError:
 		from langchain.agents import create_agent
@@ -141,7 +143,7 @@ def chat(payload: ChatRequest) -> dict:
 		return {"response": answer}
 	except Exception as exc:
 		err = str(exc)
-		if "insufficient_quota" in err or "RateLimitError" in err or "Error code: 429" in err or "ResourceExhausted" in err or "RATE_LIMIT_EXCEEDED" in err:
+		if "insufficient_quota" in err or "RateLimitError" in err or "Error code: 429" in err or "ResourceExhausted" in err or "RATE_LIMIT_EXCEEDED" in err or "rate_limit_exceeded" in err:
 			raise HTTPException(
 				status_code=503,
 				detail=(
