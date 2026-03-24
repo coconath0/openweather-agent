@@ -121,7 +121,6 @@ function ThemeToggle({ dark, onToggle }) {
       onClick={onToggle}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       style={{
-        marginLeft: 'auto',
         background: 'rgba(255,255,255,0.15)',
         border: '1px solid rgba(255,255,255,0.25)',
         borderRadius: 10,
@@ -196,8 +195,10 @@ function NoticeModal({ onClose }) {
 
         {/* Footer note */}
         <p style={{ margin: '0 0 20px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
-          This project is still in beta so some hiccups may occur. Please be patient and thank you for trying it out! ⭐️{' '}
-          If you run into any more errors,{' '}
+          This project is still in beta so some hiccups may occur. Please be patient and thank you for trying it out! ⭐️
+        </p>
+        <p style={{ margin: '0 0 20px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
+          {' '}If you run into any more errors,{' '}
           <a
             href="https://nathalyingol.netlify.app/contact/"
             target="_blank"
@@ -671,8 +672,10 @@ function App() {
               Powered by OpenWeather + Gemini
             </p>
           </div>
-          <HelpButton onClick={() => setShowNotice(true)} />
-          <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <HelpButton onClick={() => setShowNotice(true)} />
+            <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
+          </div>
         </header>
 
         {/* ---- messages ---- */}
