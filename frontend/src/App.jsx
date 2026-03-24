@@ -196,7 +196,17 @@ function NoticeModal({ onClose }) {
 
         {/* Footer note */}
         <p style={{ margin: '0 0 20px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
-          This project is still in beta so some hiccups may occur. Please be patient and report any issues you encounter. Thank you for trying it out! ⭐️
+          This project is still in beta so some hiccups may occur. Please be patient and thank you for trying it out! ⭐️{' '}
+          If you run into any more errors,{' '}
+          <a
+            href="https://nathalyingol.netlify.app/contact/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'rgba(255,255,255,0.75)', textDecorationColor: 'rgba(255,255,255,0.4)' }}
+          >
+            contact me
+          </a>
+          .
         </p>
 
         {/* Ok button */}
