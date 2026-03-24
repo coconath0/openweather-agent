@@ -141,6 +141,119 @@ function ThemeToggle({ dark, onToggle }) {
   )
 }
 
+function NoticeModal({ onClose }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="notice-title"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(3px)',
+        animation: 'fadeSlideIn 0.25s ease-out',
+      }}
+    >
+      <div
+        style={{
+          background: 'linear-gradient(160deg, var(--green-800), var(--teal-700))',
+          border: '1px solid var(--teal-600)',
+          borderRadius: 20,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.25)',
+          padding: '28px 28px 24px',
+          maxWidth: 380,
+          width: '100%',
+          color: 'var(--grey-100)',
+        }}
+      >
+        {/* Icon + title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <span style={{ fontSize: '1.6rem', lineHeight: 1 }}>⏳</span>
+          <h2
+            id="notice-title"
+            style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#ffffff' }}
+          >
+            Heads up!
+          </h2>
+        </div>
+
+        {/* Body */}
+        <p style={{ margin: '0 0 10px', fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.88)' }}>
+          The agent may be <strong style={{ color: '#ffffff' }}>slow to respond</strong> on first use, our servers are warming up and may take a few seconds.
+        </p>
+        <p style={{ margin: '0 0 22px', fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.88)' }}>
+          Please avoid sending multiple messages within the same minute to get the best results. 🌸 
+        </p>
+        <p style={{ margin: '0 0 22px', fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.88)' }}>
+          If an error persists after a few minutes it might be because it reached the daily limit or too many requests were made throughout the day!
+        </p>
+
+        {/* Footer note */}
+        <p style={{ margin: '0 0 20px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
+          This project is still in beta so some hiccups may occur. Please be patient and report any issues you encounter. Thank you for trying it out! ⭐️
+        </p>
+
+        {/* Ok button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '9px 28px',
+              borderRadius: 10,
+              border: 'none',
+              backgroundColor: 'var(--sage-500)',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85' }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+          >
+            Got it!
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HelpButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Show beta notice"
+      style={{
+        background: 'rgba(255,255,255,0.15)',
+        border: '1px solid rgba(255,255,255,0.25)',
+        borderRadius: 10,
+        width: 38,
+        height: 38,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1rem',
+        fontWeight: 700,
+        color: '#ffffff',
+        cursor: 'pointer',
+        transition: 'background 0.2s',
+        flexShrink: 0,
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+    >
+      ?
+    </button>
+  )
+}
+
 function MessageBubble({ role, content, theme }) {
   const isUser = role === 'user'
 
@@ -385,6 +498,7 @@ function App() {
   const [dark, setDark] = useState(true)
   const [weatherData, setWeatherData] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
+  const [showNotice, setShowNotice] = useState(true)
   const messagesEndRef = useRef(null)
   const theme = dark ? themes.dark : themes.light
 
@@ -547,6 +661,7 @@ function App() {
               Powered by OpenWeather + Gemini
             </p>
           </div>
+          <HelpButton onClick={() => setShowNotice(true)} />
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
         </header>
 
@@ -653,6 +768,8 @@ function App() {
           </div>
         </footer>
       </div>
+
+      {showNotice && <NoticeModal onClose={() => setShowNotice(false)} />}
 
       {/* ---- right / bottom: weather panel ---- */}
       <div
