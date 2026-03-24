@@ -680,7 +680,7 @@ function App() {
                 fontWeight: 500,
               }}
             >
-              Powered by OpenWeather + Gemini
+              Powered by OpenWeather + Groq (Llama 3.1)
             </p>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
