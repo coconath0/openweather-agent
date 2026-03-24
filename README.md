@@ -2,7 +2,7 @@
 
 A conversational weather assistant that lets you ask about current conditions and forecasts for any city in natural language. It combines a React chat UI, a LangChain-powered agent backend, and an MCP weather data server into a three-service architecture.
 
-![Stack: React · FastAPI · LangChain · Gemini · OpenWeather](https://img.shields.io/badge/stack-React%20%7C%20FastAPI%20%7C%20LangChain%20%7C%20Gemini%20%7C%20OpenWeather-blue)
+![Stack: React · FastAPI · LangChain · Groq · OpenWeather](https://img.shields.io/badge/stack-React%20%7C%20FastAPI%20%7C%20LangChain%20%7C%20Groq%20%7C%20OpenWeather-blue)
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://openweather-agent.vercel.app/)
 [![Frontend on Vercel](https://img.shields.io/badge/frontend-Vercel-black?logo=vercel)](https://openweather-agent.vercel.app/)
 [![Backend on Fly.io](https://img.shields.io/badge/backend-Fly.io-purple?logo=fly.io)](https://fly.io)
@@ -64,9 +64,9 @@ The app is split into **three independent services** that communicate over HTTP.
          │                             │
          │  GET (weather panel)        ▼
          │  ────────────────▶  ┌──────────────┐
-         │                     │ Google Gemini │
-         └─────────────────▶   │ (gemini-2.5- │
-           (also fetches       │  flash)       │
+         │                     │ Groq          │
+         └─────────────────▶   │ (llama-3.1-   │
+           (also fetches       │  8b-instant)  │
             MCP directly       └──────────────┘
             for the side
             panel)
@@ -107,7 +107,7 @@ openweather-agent/
 │   ├── Dockerfile
 │   ├── .dockerignore
 │   ├── requirements.txt
-│   └── .env                        # GOOGLE_API_KEY, MCP_SERVER_URL (you create this)
+│   └── .env                        # GROQ_API_KEY, MCP_SERVER_URL (you create this)
 │
 └── frontend/                       # Service 3: React chat UI
     ├── Dockerfile
@@ -176,7 +176,7 @@ fly deploy
 **Secrets required:**
 
 ```bash
-fly secrets set GOOGLE_API_KEY=your_key_here --app openweather-agent-backend
+fly secrets set GROQ_API_KEY=your_key_here --app openweather-agent-backend
 fly secrets set MCP_SERVER_URL=https://openweather-mcp-server.fly.dev --app openweather-agent-backend
 fly secrets set CORS_ORIGINS=https://openweather-agent.vercel.app --app openweather-agent-backend
 ```
@@ -199,7 +199,7 @@ OPENWEATHER_API_KEY=your_key_here
 `agent-backend/.env`:
 ```env
 MCP_SERVER_URL=http://127.0.0.1:8000
-GOOGLE_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
 ```
 
 **2. Build and start everything:**
@@ -237,11 +237,11 @@ Alternatively, you can run each service manually for development (hot-reload, de
 | Node.js                | 20+             | Frontend dev server (local dev only) |
 | Docker                 | 20+             | For Docker Quick Start (optional) |
 | OpenWeather API key    | —               | Free tier works                  |
-| Google Gemini API key  | —               | Free tier: 15 req/min, 1M tokens/day |
+| Groq API key           | —               | Free tier: ~14,400 req/day, 30 req/min |
 
 Get your API keys:
 - **OpenWeather**: https://openweathermap.org/api_keys (sign up for free)
-- **Google Gemini**: https://aistudio.google.com/apikey (free tier is sufficient for local dev)
+- **Groq**: https://console.groq.com/ (create a free account, go to API Keys)
 
 ### 1. MCP Server
 
@@ -273,7 +273,7 @@ Create `agent-backend/.env`:
 
 ```env
 MCP_SERVER_URL=http://127.0.0.1:8000
-GOOGLE_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
 ```
 
 ```bash
@@ -336,10 +336,10 @@ This section walks through each service so you know where to make changes.
 
 | Concept | Detail |
 |---------|--------|
-| **LLM** | `ChatGoogleGenerativeAI(model="gemini-2.5-flash")` from `langchain-google-genai` |
+| **LLM** | `ChatGroq(model="llama-3.1-8b-instant")` from `langchain-groq` |
 | **Tools** | `get_current_weather(city)` and `get_forecast(city, days)` — both use `requests.get()` to call the MCP Server |
 | **Agent construction** | `build_agent_executor()` tries the classic `AgentExecutor` + `create_openai_tools_agent` import first. If that fails (depends on your LangChain version), it falls back to `create_agent` from the v1 graph API. |
-| **Lazy init** | `get_agent_executor()` initializes the agent on the first request, not at import time. This lets uvicorn start even if `GOOGLE_API_KEY` isn't set yet. |
+| **Lazy init** | `get_agent_executor()` initializes the agent on the first request, not at import time. This lets uvicorn start even if `GROQ_API_KEY` isn't set yet. |
 | **System prompt** | Tells the agent to always use its tools for real data, mention the city name, and give practical advice. |
 | **Error handling** | Catches quota/rate-limit errors (checking for `insufficient_quota`, `RateLimitError`, `429`, `ResourceExhausted`, `RATE_LIMIT_EXCEEDED` in the error string) and returns 503. Everything else returns 500. |
 
@@ -460,7 +460,7 @@ Each service reads from its own `.env` file. These files are **not committed to 
 | Variable | File / Service | Required | Description |
 |----------|---------------|----------|-------------|
 | `OPENWEATHER_API_KEY` | `mcp-server/.env` | Yes | From openweathermap.org |
-| `GOOGLE_API_KEY` | `agent-backend/.env` | Yes | From aistudio.google.com |
+| `GROQ_API_KEY` | `agent-backend/.env` | Yes | From console.groq.com |
 | `MCP_SERVER_URL` | `agent-backend/.env` | Yes | URL of the MCP server. Local: `http://127.0.0.1:8000`. Production: `https://openweather-mcp-server.fly.dev` |
 | `CORS_ORIGINS` | Both backends | No | Comma-separated list of allowed origins. Defaults to `http://localhost:5173`. Production: `https://openweather-agent.vercel.app` |
 | `VITE_AGENT_URL` | `frontend/.env` | No | Agent backend URL for production builds. Defaults to `http://localhost:8001` if unset. |
@@ -523,7 +523,7 @@ Edit the `SYSTEM_PROMPT` string in `agent-backend/main.py`. This controls the ag
 
 ```bash
 fly secrets set OPENWEATHER_API_KEY=new_key_here --app openweather-mcp-server
-fly secrets set GOOGLE_API_KEY=new_key_here --app openweather-agent-backend
+fly secrets set GROQ_API_KEY=new_key_here --app openweather-agent-backend
 ```
 
 Fly.io automatically restarts the machine after a secret update.
@@ -534,7 +534,7 @@ Fly.io automatically restarts the machine after a secret update.
 
 - **No conversation memory** — each message to the agent is independent. The agent can't reference earlier messages in the conversation.
 - **No auth** — all API endpoints are publicly accessible. Fine for a demo, but you'd want rate-limiting or token auth before any sensitive use.
-- **Gemini free tier rate limits** — 15 requests per minute. Under heavy use you'll hit 503 errors. The frontend handles this gracefully with a user-friendly message.
+- **Groq free tier rate limits** — 30 requests per minute, ~14,400 per day. Much higher than the previous provider; suitable for demo traffic spikes.
 - **Fly.io cold starts** — both backend services use `auto_stop_machines` with `min_machines_running = 0`. After a period of inactivity the machines spin down. The first request after idle will take 5–10 seconds to cold-start. Subsequent requests are fast.
 - **No tests** — there are currently no unit or integration tests for any of the three services.
 
@@ -545,7 +545,7 @@ Fly.io automatically restarts the machine after a secret update.
 | Problem | Likely Cause | Fix |
 |---------|-------------|-----|
 | `503` from MCP server | `OPENWEATHER_API_KEY` missing or invalid | Check `mcp-server/.env` (local) or Fly.io secrets (production). Verify the key at openweathermap.org. New keys can take a few hours to activate. |
-| `503` from agent backend | Gemini quota exceeded or bad key | Check `agent-backend/.env` (local) or Fly.io secrets (production). Verify at aistudio.google.com. Wait a minute if you hit rate limits. |
+| `503` from agent backend | Groq rate limit exceeded or bad key | Check `agent-backend/.env` (local) or Fly.io secrets (production). Verify at console.groq.com. Wait a moment if you hit rate limits. |
 | `404` from `/current-weather` or `/forecast` | City name not recognized | Check spelling. Use the English name of the city. |
 | Frontend shows "temporarily unavailable" | Backend returned 503 | Same as the 503 fixes above. |
 | CORS errors in browser console | Origin not allowed | Locally: both backends allow `http://localhost:5173` only. In production: set `CORS_ORIGINS=https://openweather-agent.vercel.app` as a secret on both Fly.io apps. |
