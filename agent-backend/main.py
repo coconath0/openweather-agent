@@ -41,7 +41,7 @@ def get_current_weather(city: str) -> str:
 	if not MCP_SERVER_URL:
 		raise ValueError("MCP_SERVER_URL is not set in environment variables.")
 
-	response = requests.get(f"{MCP_SERVER_URL}/current-weather", params={"city": city}, timeout=15)
+	response = requests.get(f"{MCP_SERVER_URL}/current-weather", params={"city": city}, timeout=45)
 	response.raise_for_status()
 	return json.dumps(response.json())
 
@@ -55,7 +55,7 @@ def get_forecast(city: str, days: int) -> str:
 	response = requests.get(
 		f"{MCP_SERVER_URL}/forecast",
 		params={"city": city, "days": days},
-		timeout=15,
+		timeout=45,
 	)
 	response.raise_for_status()
 	return json.dumps(response.json())
