@@ -12,12 +12,13 @@ from pydantic import BaseModel
 
 load_dotenv()
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
 app = FastAPI(title="OpenWeather Agent Backend")
 
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=["http://localhost:5173"],
+	allow_origins=CORS_ORIGINS,
 	allow_credentials=True,
 	allow_methods=["*"],
 	allow_headers=["*"],

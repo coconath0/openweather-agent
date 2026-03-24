@@ -360,9 +360,10 @@ function App() {
     let cancelled = false
     setWeatherLoading(true)
 
+    const mcpUrl = import.meta.env.VITE_MCP_URL || 'http://localhost:8000'
     Promise.all([
-      fetch(`http://localhost:8000/current-weather?city=${encodeURIComponent(city)}`).then((r) => r.ok ? r.json() : null),
-      fetch(`http://localhost:8000/forecast?city=${encodeURIComponent(city)}&days=5`).then((r) => r.ok ? r.json() : null),
+      fetch(`${mcpUrl}/current-weather?city=${encodeURIComponent(city)}`).then((r) => r.ok ? r.json() : null),
+      fetch(`${mcpUrl}/forecast?city=${encodeURIComponent(city)}&days=5`).then((r) => r.ok ? r.json() : null),
     ])
       .then(([current, forecast]) => {
         if (cancelled) return
@@ -399,7 +400,8 @@ function App() {
     setSending(true)
 
     try {
-      const response = await fetch('http://localhost:8001/chat', {
+      const agentUrl = import.meta.env.VITE_AGENT_URL || 'http://localhost:8001'
+      const response = await fetch(`${agentUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text }),
