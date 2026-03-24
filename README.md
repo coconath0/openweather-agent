@@ -3,13 +3,34 @@
 A conversational weather assistant that lets you ask about current conditions and forecasts for any city in natural language. It combines a React chat UI, a LangChain-powered agent backend, and an MCP weather data server into a three-service architecture.
 
 ![Stack: React · FastAPI · LangChain · Gemini · OpenWeather](https://img.shields.io/badge/stack-React%20%7C%20FastAPI%20%7C%20LangChain%20%7C%20Gemini%20%7C%20OpenWeather-blue)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://openweather-agent.vercel.app/)
+[![Frontend on Vercel](https://img.shields.io/badge/frontend-Vercel-black?logo=vercel)](https://openweather-agent.vercel.app/)
+[![Backend on Fly.io](https://img.shields.io/badge/backend-Fly.io-purple?logo=fly.io)](https://fly.io)
+
+---
+
+## Live Demo
+
+**[https://openweather-agent.vercel.app/](https://openweather-agent.vercel.app/)**
+
+Try asking:
+- *"What's the weather like in Tokyo right now?"*
+- *"Should I bring an umbrella in London this weekend?"*
+- *"Give me a 5-day forecast for New York."*
+
+> **Note:** The backend services (MCP Server and Agent Backend) are hosted on Fly.io with `auto_stop_machines` enabled. The **first request after a period of inactivity may take 5–10 seconds** due to a cold start. Subsequent requests are fast.
 
 ---
 
 ## Table of Contents
 
+- [Live Demo](#live-demo)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
+- [Deployment](#deployment)
+  - [Frontend — Vercel](#frontend--vercel)
+  - [MCP Server — Fly.io](#mcp-server--flyio)
+  - [Agent Backend — Fly.io](#agent-backend--flyio)
 - [Docker Quick Start](#docker-quick-start)
 - [Local Development Setup](#local-development-setup)
   - [Prerequisites](#prerequisites)
@@ -50,6 +71,14 @@ The app is split into **three independent services** that communicate over HTTP.
             for the side
             panel)
 ```
+
+**Production URLs:**
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | Vercel | https://openweather-agent.vercel.app |
+| Agent Backend | Fly.io | https://openweather-agent-backend.fly.dev |
+| MCP Server | Fly.io | https://openweather-mcp-server.fly.dev |
 
 **There are two data paths in the frontend:**
 
@@ -94,6 +123,65 @@ openweather-agent/
 ```
 
 > **Note:** Both Python services are single-file apps (`main.py`). The frontend has all its React components in `App.jsx` — there are no separate component files.
+
+---
+
+## Deployment
+
+The app is deployed across two platforms. The frontend is a static Vite build on Vercel; the two Python services run as Docker containers on Fly.io.
+
+### Frontend — Vercel
+
+The `frontend/` directory is deployed directly to Vercel. The `vercel.json` at the repo root configures the build.
+
+**Steps to redeploy:**
+
+1. Push changes to the `main` branch — Vercel auto-deploys on push.
+2. Or trigger a manual deploy from the Vercel dashboard.
+
+**Environment variables required in Vercel dashboard:**
+
+| Variable | Value |
+|----------|-------|
+| `VITE_AGENT_URL` | `https://openweather-agent-backend.fly.dev` |
+| `VITE_MCP_URL` | `https://openweather-mcp-server.fly.dev` |
+
+> If you fork this repo, update these variables in your own Vercel project settings to point at your Fly.io apps.
+
+### MCP Server — Fly.io
+
+App name: `openweather-mcp-server` · Region: `iad` (Ashburn, VA) · 256 MB RAM
+
+```bash
+cd mcp-server
+fly deploy
+```
+
+**Secrets required** (set once with `fly secrets set`):
+
+```bash
+fly secrets set OPENWEATHER_API_KEY=your_key_here --app openweather-mcp-server
+fly secrets set CORS_ORIGINS=https://openweather-agent.vercel.app --app openweather-mcp-server
+```
+
+### Agent Backend — Fly.io
+
+App name: `openweather-agent-backend` · Region: `iad` (Ashburn, VA) · 512 MB RAM
+
+```bash
+cd agent-backend
+fly deploy
+```
+
+**Secrets required:**
+
+```bash
+fly secrets set GOOGLE_API_KEY=your_key_here --app openweather-agent-backend
+fly secrets set MCP_SERVER_URL=https://openweather-mcp-server.fly.dev --app openweather-agent-backend
+fly secrets set CORS_ORIGINS=https://openweather-agent.vercel.app --app openweather-agent-backend
+```
+
+> **Cold starts:** Both Fly.io apps have `auto_stop_machines = 'stop'` and `min_machines_running = 0`, which means they shut down after inactivity and restart on the next request. Expect a 5–10 second delay on the first request after idle. This is normal behavior on the free tier.
 
 ---
 
@@ -367,13 +455,16 @@ curl -X POST http://127.0.0.1:8001/chat \
 
 ## Environment Variables
 
-Each service reads from its own `.env` file. These files are **not committed to git** — you must create them locally.
+Each service reads from its own `.env` file. These files are **not committed to git** — you must create them locally. In production, these are set as secrets/environment variables on the hosting platform.
 
-| Variable | File | Required | Description |
-|----------|------|----------|-------------|
+| Variable | File / Service | Required | Description |
+|----------|---------------|----------|-------------|
 | `OPENWEATHER_API_KEY` | `mcp-server/.env` | Yes | From openweathermap.org |
 | `GOOGLE_API_KEY` | `agent-backend/.env` | Yes | From aistudio.google.com |
-| `MCP_SERVER_URL` | `agent-backend/.env` | Yes | URL of the MCP server, e.g. `http://127.0.0.1:8000` |
+| `MCP_SERVER_URL` | `agent-backend/.env` | Yes | URL of the MCP server. Local: `http://127.0.0.1:8000`. Production: `https://openweather-mcp-server.fly.dev` |
+| `CORS_ORIGINS` | Both backends | No | Comma-separated list of allowed origins. Defaults to `http://localhost:5173`. Production: `https://openweather-agent.vercel.app` |
+| `VITE_AGENT_URL` | `frontend/.env` | No | Agent backend URL for production builds. Defaults to `http://localhost:8001` if unset. |
+| `VITE_MCP_URL` | `frontend/.env` | No | MCP server URL for production builds. Defaults to `http://localhost:8000` if unset. |
 
 ---
 
@@ -422,13 +513,29 @@ Everything is in `frontend/src/App.jsx`. Add new components above the `App()` fu
 
 Edit the `SYSTEM_PROMPT` string in `agent-backend/main.py`. This controls the agent's personality and behavior. Changes take effect on the next request (no restart needed with `--reload`).
 
+### Redeploying after a code change
+
+- **Frontend** — push to `main`; Vercel auto-deploys.
+- **MCP Server** — `cd mcp-server && fly deploy`
+- **Agent Backend** — `cd agent-backend && fly deploy`
+
+### Updating a production secret (e.g. rotating the API key)
+
+```bash
+fly secrets set OPENWEATHER_API_KEY=new_key_here --app openweather-mcp-server
+fly secrets set GOOGLE_API_KEY=new_key_here --app openweather-agent-backend
+```
+
+Fly.io automatically restarts the machine after a secret update.
+
 ---
 
 ## Known Limitations
 
 - **No conversation memory** — each message to the agent is independent. The agent can't reference earlier messages in the conversation.
-- **No auth** — all services are open. Fine for local development, but you'd need to add authentication before any kind of deployment.
+- **No auth** — all API endpoints are publicly accessible. Fine for a demo, but you'd want rate-limiting or token auth before any sensitive use.
 - **Gemini free tier rate limits** — 15 requests per minute. Under heavy use you'll hit 503 errors. The frontend handles this gracefully with a user-friendly message.
+- **Fly.io cold starts** — both backend services use `auto_stop_machines` with `min_machines_running = 0`. After a period of inactivity the machines spin down. The first request after idle will take 5–10 seconds to cold-start. Subsequent requests are fast.
 - **No tests** — there are currently no unit or integration tests for any of the three services.
 
 ---
@@ -437,14 +544,17 @@ Edit the `SYSTEM_PROMPT` string in `agent-backend/main.py`. This controls the ag
 
 | Problem | Likely Cause | Fix |
 |---------|-------------|-----|
-| `503` from MCP server | `OPENWEATHER_API_KEY` missing or invalid | Check `mcp-server/.env`. Verify the key at openweathermap.org. New keys can take a few hours to activate. |
-| `503` from agent backend | Gemini quota exceeded or bad key | Check `agent-backend/.env`. Verify at aistudio.google.com. Wait a minute if you hit rate limits. |
+| `503` from MCP server | `OPENWEATHER_API_KEY` missing or invalid | Check `mcp-server/.env` (local) or Fly.io secrets (production). Verify the key at openweathermap.org. New keys can take a few hours to activate. |
+| `503` from agent backend | Gemini quota exceeded or bad key | Check `agent-backend/.env` (local) or Fly.io secrets (production). Verify at aistudio.google.com. Wait a minute if you hit rate limits. |
 | `404` from `/current-weather` or `/forecast` | City name not recognized | Check spelling. Use the English name of the city. |
 | Frontend shows "temporarily unavailable" | Backend returned 503 | Same as the 503 fixes above. |
-| CORS errors in browser console | Port mismatch | Both backends allow `http://localhost:5173` only. Make sure the frontend runs on that port. If you changed it, update `CORSMiddleware` in both `main.py` files. |
+| CORS errors in browser console | Origin not allowed | Locally: both backends allow `http://localhost:5173` only. In production: set `CORS_ORIGINS=https://openweather-agent.vercel.app` as a secret on both Fly.io apps. |
+| First request on production is very slow (5–10 s) | Fly.io cold start | Expected. Machines are stopped when idle and restart on demand. The delay only happens after inactivity. |
+| `fly deploy` fails | Not logged in or wrong project | Run `fly auth login` and confirm the app name in `fly.toml` matches your Fly.io app. |
+| Vercel deploy doesn't pick up env changes | Cached build | Trigger a redeploy from the Vercel dashboard after updating environment variables. |
 | `Could not import module "main"` | Running uvicorn from wrong directory | `cd` into the service folder first, or use `--app-dir`. |
 | Weather panel doesn't populate | City regex didn't match | Try phrasing like "What's the weather in London?" (capitalized city name after "in/for/at"). |
-| First chat message is slow | Lazy agent initialization | Expected. The LLM and agent are built on the first request. Subsequent messages are faster. |
+| First chat message is slow (local) | Lazy agent initialization | Expected. The LLM and agent are built on the first request. Subsequent messages are faster. |
 | Docker build fails with network errors | No internet during build | Ensure Docker has network access. On corporate networks, configure Docker's DNS settings. |
 | `docker compose up` exits immediately | Missing `.env` files or bad API keys | Create both `.env` files before running. Check logs with `docker compose logs <service-name>`. |
 | Port already in use with Docker | Another process on 8000/8001/5173 | Stop the other process, or change port mappings in `docker-compose.yml` (e.g., `"9000:8000"`). |
