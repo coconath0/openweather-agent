@@ -5,9 +5,20 @@ const initialAgentMessage =
   'Hi! Ask me anything about the weather. Try: Should I go hiking in Austin this weekend?'
 
 function extractCityFromMessages(messages) {
+  // Prefer extracting from the agent's response — it names the city it actually queried
+  const agentMessages = messages.filter((m) => m.role === 'agent' && m.content !== initialAgentMessage)
+  if (agentMessages.length) {
+    const agentText = agentMessages[agentMessages.length - 1].content
+    const agentMatch = agentText.match(/(?:[Ii]n|[Ff]or)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)(?:\s+(?:with|is|has|the|today|right|weather|currently))/);
+    if (agentMatch) return agentMatch[1]
+    // Fallback: "day in San Marcos" / "city of San Marcos"
+    const fallback = agentText.match(/(?:day|weather|city)\s+in\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)/)
+    if (fallback) return fallback[1]
+  }
+
+  // Fall back to user message
   const userMessages = messages.filter((m) => m.role === 'user')
   if (!userMessages.length) return null
-
   const text = userMessages[userMessages.length - 1].content
   const match = text.match(/(?:[Ii]n|[Ff]or|[Aa]t)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)/)
   return match ? match[1] : null
