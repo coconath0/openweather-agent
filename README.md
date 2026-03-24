@@ -125,7 +125,7 @@ openweather-agent/
 > **Note:** Both Python services are single-file apps (`main.py`). The frontend has all its React components in `App.jsx` — there are no separate component files.
 
 ---
-
+<!---
 ## Deployment
 
 The app is deployed across two platforms. The frontend is a static Vite build on Vercel; the two Python services run as Docker containers on Fly.io.
@@ -184,7 +184,7 @@ fly secrets set CORS_ORIGINS=https://openweather-agent.vercel.app --app openweat
 > **Cold starts:** Both Fly.io apps have `auto_stop_machines = 'stop'` and `min_machines_running = 0`, which means they shut down after inactivity and restart on the next request. Expect a 5–10 second delay on the first request after idle. This is normal behavior on the free tier.
 
 ---
-
+-->
 ## Docker Quick Start
 
 The fastest way to run all three services with a single command.
